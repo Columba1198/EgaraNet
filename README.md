@@ -32,7 +32,7 @@ This repository provides the **training and inference code** for EgaraNet. For t
 ## Architecture
 
 <p align="center">
-  <img src="assets/architecture.png" alt="Architecture"  style="width: 60%;">
+  <img src="assets/architecture.png" alt="Architecture"  style="width: 70%;">
 </p>
 
 EgaraNet is a composite model with two main components:

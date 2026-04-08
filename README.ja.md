@@ -32,7 +32,7 @@
 ## アーキテクチャ
 
 <p align="center">
-  <img src="assets/architecture.png" alt="Architecture"  style="width: 60%;">
+  <img src="assets/architecture.png" alt="Architecture"  style="width: 70%;">
 </p>
 
 EgaraNetは、2つの主要なコンポーネントで構成された複合モデルです。
