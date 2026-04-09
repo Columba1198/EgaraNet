@@ -19,7 +19,7 @@ from .layers import (
     AttentionPooling,
     RMSNorm,
     SwiGLU,
-    TransposedTransformerBlock,
+    TransposedAttentionTransformer,
 )
 from .preprocessing import MaxResizeMod16, preprocess_image, build_transform
 from .losses import TripletLoss
@@ -32,7 +32,7 @@ __all__ = [
     "StyleNet",
     "cosine_similarity",
     # Layers
-    "TransposedTransformerBlock",
+    "TransposedAttentionTransformer",
     "AttentionPooling",
     "RMSNorm",
     "SwiGLU",

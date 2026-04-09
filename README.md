@@ -40,11 +40,11 @@ EgaraNet is a composite model with two main components:
 | Component | Description |
 |-----------|-------------|
 | **Backbone** | DINOv3 ViT-L/16 — A Vision Transformer pretrained with DINOv3 self-supervised learning |
-| **Head** | StyleNet — Custom decoder with Transposed Transformer Blocks (TTB) |
+| **Head** | StyleNet — Custom decoder with Transposed Attention Transformer (TAT) |
 
-### Transposed Transformer Block (TTB)
+### Transposed Attention Transformer (TAT)
 
-The **Transposed Transformer Block** is a Transformer layer designed to extract style information by operating in channel space rather than spatial space. Inspired by the observation from Gatys et al. ([CVPR 2016](https://openaccess.thecvf.com/content_cvpr_2016/html/Gatys_Image_Style_Transfer_CVPR_2016_paper.html)) that Gram matrices of feature maps encode style independent of content, the TTB computes cross-covariance attention where:
+The **Transposed Attention Transformer** is a Transformer designed to extract style information by operating in channel space rather than spatial space. Inspired by the observation from Gatys et al. ([CVPR 2016](https://openaccess.thecvf.com/content_cvpr_2016/html/Gatys_Image_Style_Transfer_CVPR_2016_paper.html)) that Gram matrices of feature maps encode style independent of content, the TAT computes cross-covariance attention where:
 
 1. Query is transposed: `Q.T` → shape `(HeadDim, N)` instead of `(N, HeadDim)`
 2. Attention is computed as `(Q.T @ K)` → shape `(HeadDim, HeadDim)` — a C×C channel correlation matrix
@@ -52,7 +52,10 @@ The **Transposed Transformer Block** is a Transformer layer designed to extract 
 
 This discards positional/spatial information, preserving only how channels (features) correlate with each other — exactly the style signature.
 
-TTB extends the concept of the Transposed Attention proposed in [MANIQA](https://arxiv.org/abs/2204.08958) into a complete Transformer block featuring RMSNorm and a SwiGLU feed-forward network.
+Channel attention mechanisms are not new, with several prior studies having explored similar approaches:
+- [Restormer: Efficient Transformer for High-Resolution Image Restoration](https://arxiv.org/abs/2111.09881)
+- [Multi-Head Transposed Attention Transformer for Sea Ice Segmentation in Sar Imagery](https://ieeexplore.ieee.org/document/10640437)
+- [MANIQA: Multi-dimension Attention Network for No-Reference Image Quality Assessment](https://arxiv.org/abs/2204.08958)
 
 ### Technical Specifications
 
@@ -60,7 +63,7 @@ TTB extends the concept of the Transposed Attention proposed in [MANIQA](https:/
 |-----------|-------|
 | Embedding dimension | 1024 |
 | Backbone | DINOv3 ViT-L/16 (hidden_size=1024) |
-| TTB layers | 3 |
+| TAT layers | 3 |
 | Attention heads | 16 (head_dim=64) |
 | Input resolution | Dynamic (any multiple of 16) |
 | Training images | ~1.2M from ~12K artists |
@@ -198,9 +201,9 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 | Section | Key | Default | Description |
 |---------|-----|---------|-------------|
 | model | backbone | `facebook/dinov3-vitl16-pretrain-lvd1689m` | DINOv3 backbone model ID |
-| model | ttb_layers | 3 | Number of TTB layers |
-| model | ttb_heads | 16 | Attention heads per TTB |
-| model | hidden_dim | 1024 | Internal TTB dimension |
+| model | tat_layers | 3 | Number of TAT layers |
+| model | tat_heads | 16 | Attention heads per TAT |
+| model | hidden_dim | 1024 | Internal TAT dimension |
 | model | output_dim | 1024 | Style vector dimension |
 | preprocessing | max_size | 512 | Max image size (long edge) |
 | preprocessing | keep_aspect_ratio | true | Preserve aspect ratio |
@@ -217,7 +220,7 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 ├── egaranet/                  # Python package
 │   ├── __init__.py            # Package exports
 │   ├── model.py               # EgaraNet model (backbone + StyleNet)
-│   ├── layers.py              # RMSNorm, SwiGLU, TTB, AttentionPooling
+│   ├── layers.py              # RMSNorm, SwiGLU, TAT, AttentionPooling
 │   ├── losses.py              # Loss functions (TripletLoss)
 │   ├── preprocessing.py       # Image preprocessing (MaxResizeMod16)
 │   └── dataset.py             # StyleTripletDataset
@@ -240,8 +243,10 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 ## References
 
 - **DINOv3**: [arXiv:2508.10104](https://arxiv.org/abs/2508.10104)
-- **MANIQA**: Yang et al., "Multi-dimension Attention Network for No-Reference Image Quality Assessment" [arXiv:2204.08958](https://arxiv.org/abs/2204.08958)
-- **Style Transfer**: Gatys et al., "Image Style Transfer Using Convolutional Neural Networks" [CVPR 2016](https://openaccess.thecvf.com/content_cvpr_2016/html/Gatys_Image_Style_Transfer_CVPR_2016_paper.html)
+- **Style Transfer**: "Image Style Transfer Using Convolutional Neural Networks" [CVPR 2016](https://openaccess.thecvf.com/content_cvpr_2016/html/Gatys_Image_Style_Transfer_CVPR_2016_paper.html)
+- **Restormer**: "Restormer: Efficient Transformer for High-Resolution Image Restoration" [arXiv:2111.09881](https://arxiv.org/abs/2111.09881)
+- **MHTA**: "Multi-Head Transposed Attention Transformer for Sea Ice Segmentation in Sar Imagery" [IGARSS 2024](https://ieeexplore.ieee.org/document/10640437)
+- **MANIQA**: "MANIQA: Multi-dimension Attention Network for No-Reference Image Quality Assessment" [arXiv:2204.08958](https://arxiv.org/abs/2204.08958)
 
 ## Links
 

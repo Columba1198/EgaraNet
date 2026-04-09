@@ -94,8 +94,8 @@ def get_config(args: argparse.Namespace) -> dict:
     return {
         # Model
         "backbone": args.backbone or model_cfg.get("backbone", "facebook/dinov3-vitl16-pretrain-lvd1689m"),
-        "ttb_layers": args.ttb_layers or model_cfg.get("ttb_layers", 3),
-        "ttb_heads": args.ttb_heads or model_cfg.get("ttb_heads", 16),
+        "tat_layers": args.tat_layers or model_cfg.get("tat_layers", 3),
+        "tat_heads": args.tat_heads or model_cfg.get("tat_heads", 16),
         "hidden_dim": args.hidden_dim or model_cfg.get("hidden_dim", 1024),
         "output_dim": args.output_dim or model_cfg.get("output_dim", 1024),
         # Preprocessing
@@ -243,8 +243,8 @@ def train(config: dict):
     model = StyleNet(
         input_dim=1024,
         hidden_dim=config["hidden_dim"],
-        num_ttb_layers=config["ttb_layers"],
-        num_heads=config["ttb_heads"],
+        num_tat_layers=config["tat_layers"],
+        num_heads=config["tat_heads"],
         output_dim=config["output_dim"],
     ).to(device)
 
@@ -332,8 +332,8 @@ def train(config: dict):
                 "dino_model_id": config["backbone"],
                 "hidden_dim": config["hidden_dim"],
                 "output_dim": config["output_dim"],
-                "num_ttb_layers": config["ttb_layers"],
-                "num_heads": config["ttb_heads"],
+                "num_tat_layers": config["tat_layers"],
+                "num_heads": config["tat_heads"],
             },
         }, save_path)
         print(f"Checkpoint saved: {save_path}")
@@ -374,10 +374,10 @@ def main():
     # Model overrides
     parser.add_argument("--backbone", default=None,
                         help="Backbone model HuggingFace ID")
-    parser.add_argument("--ttb_layers", type=int, default=None,
-                        help="Number of TTB layers")
-    parser.add_argument("--ttb_heads", type=int, default=None,
-                        help="Number of attention heads in TTB")
+    parser.add_argument("--tat_layers", type=int, default=None,
+                        help="Number of TAT layers")
+    parser.add_argument("--tat_heads", type=int, default=None,
+                        help="Number of attention heads in TAT")
     parser.add_argument("--hidden_dim", type=int, default=None)
     parser.add_argument("--output_dim", type=int, default=None)
 

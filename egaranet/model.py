@@ -20,19 +20,19 @@ from transformers import AutoImageProcessor, AutoModel
 
 from .layers import (
     AttentionPooling,
-    TransposedTransformerBlock,
+    TransposedAttentionTransformer,
 )
 from .preprocessing import MaxResizeMod16, build_transform
 
 
 class StyleNet(nn.Module):
-    """StyleNet head: TTB layers → AttentionPooling → Projection → L2 norm.
+    """StyleNet head: TAT layers → AttentionPooling → Projection → L2 norm.
 
     Args:
         input_dim: Input channel dimension from the backbone.
-        hidden_dim: Internal channel width of TTB layers.
-        num_ttb_layers: Number of stacked TransposedTransformerBlock layers.
-        num_heads: Number of attention heads in each TTB.
+        hidden_dim: Internal channel width of TAT layers.
+        num_tat_layers: Number of stacked TransposedAttentionTransformer layers.
+        num_heads: Number of attention heads in each TAT.
         output_dim: Dimension of the final L2-normalized style vector.
         attn_pool_heads: Number of heads in AttentionPooling.
         rms_norm_eps: Epsilon for RMSNorm.
@@ -43,7 +43,7 @@ class StyleNet(nn.Module):
         self,
         input_dim: int = 1024,
         hidden_dim: int = 1024,
-        num_ttb_layers: int = 3,
+        num_tat_layers: int = 3,
         num_heads: int = 16,
         output_dim: int = 1024,
         attn_pool_heads: int = 8,
@@ -56,14 +56,14 @@ class StyleNet(nn.Module):
             else nn.Linear(input_dim, hidden_dim)
         )
 
-        self.ttb_layers = nn.ModuleList([
-            TransposedTransformerBlock(
+        self.tat_layers = nn.ModuleList([
+            TransposedAttentionTransformer(
                 dim=hidden_dim,
                 num_heads=num_heads,
                 eps=rms_norm_eps,
                 swiglu_multiple=swiglu_multiple,
             )
-            for _ in range(num_ttb_layers)
+            for _ in range(num_tat_layers)
         ])
 
         self.attn_pool = AttentionPooling(dim=hidden_dim, num_heads=attn_pool_heads)
@@ -83,7 +83,7 @@ class StyleNet(nn.Module):
             L2-normalized style embeddings [B, output_dim].
         """
         x = self.input_proj(x)
-        for layer in self.ttb_layers:
+        for layer in self.tat_layers:
             x = layer(x)
         x = self.attn_pool(x)
         x = self.head(x)
@@ -96,7 +96,7 @@ class EgaraNet(nn.Module):
     A composite model that extracts illustration style embeddings.
     The backbone (DINOv3 ViT) extracts visual features, and StyleNet
     transforms them into L2-normalized style vectors using Transposed
-    Transformer Blocks (TTB).
+    Attention Transformer (TAT).
 
     Example:
         >>> model = EgaraNet.from_checkpoint("checkpoints/epoch_10.pth")
@@ -150,7 +150,7 @@ class EgaraNet(nn.Module):
         backbone_id = cls.DEFAULT_BACKBONE_ID
         hidden_dim = 1024
         output_dim = 1024
-        num_ttb_layers = 3
+        num_tat_layers = 3
         num_heads = 16
 
         # Load checkpoint and override defaults from config
@@ -160,7 +160,7 @@ class EgaraNet(nn.Module):
             backbone_id = cfg.get("dino_model_id", backbone_id)
             hidden_dim = int(cfg.get("hidden_dim", hidden_dim))
             output_dim = int(cfg.get("output_dim", output_dim))
-            num_ttb_layers = int(cfg.get("num_ttb_layers", num_ttb_layers))
+            num_tat_layers = int(cfg.get("num_tat_layers", num_tat_layers))
             num_heads = int(cfg.get("num_heads", num_heads))
 
         # Load backbone
@@ -173,7 +173,7 @@ class EgaraNet(nn.Module):
         style_net = StyleNet(
             input_dim=backbone_hidden_size,
             hidden_dim=hidden_dim,
-            num_ttb_layers=num_ttb_layers,
+            num_tat_layers=num_tat_layers,
             num_heads=num_heads,
             output_dim=output_dim,
         ).to(device)

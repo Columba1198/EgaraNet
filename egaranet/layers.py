@@ -4,7 +4,7 @@ EgaraNet — Core layer definitions.
 Modules:
     RMSNorm                   : Root Mean Square Layer Normalization
     SwiGLU                    : SwiGLU Feed-Forward Network
-    TransposedTransformerBlock: Cross-covariance (channel-wise) Transformer block
+    TransposedAttentionTransformer: Cross-covariance (channel-wise) Transformer block
     AttentionPooling          : Learned-query attention pooling
 """
 
@@ -57,8 +57,8 @@ class SwiGLU(nn.Module):
         return self.w_down(F.silu(self.w_gate(x)) * self.w_up(x))
 
 
-class TransposedTransformerBlock(nn.Module):
-    """Transposed Transformer Block (TTB).
+class TransposedAttentionTransformer(nn.Module):
+    """Transposed Attention Transformer (TAT).
 
     A Transformer layer that computes attention in channel space rather than
     spatial space. Inspired by the observation that Gram matrices of feature
