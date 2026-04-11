@@ -52,6 +52,10 @@ The **Transposed Attention Transformer** is a Transformer designed to extract st
 
 This discards positional/spatial information, preserving only how channels (features) correlate with each other — exactly the style signature.
 
+<p align="center">
+  <img src="assets/tat.png" alt="TAT"  style="width: 75%;">
+</p>
+
 Channel attention mechanisms are not new, with several prior studies having explored similar approaches:
 - [Restormer: Efficient Transformer for High-Resolution Image Restoration](https://arxiv.org/abs/2111.09881)
 - [Multi-Head Transposed Attention Transformer for Sea Ice Segmentation in Sar Imagery](https://ieeexplore.ieee.org/document/10640437)
@@ -207,11 +211,18 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 | model | output_dim | 1024 | Style vector dimension |
 | preprocessing | max_size | 512 | Max image size (long edge) |
 | preprocessing | keep_aspect_ratio | true | Preserve aspect ratio |
+| preprocessing | mean | `[0.485, 0.456, 0.406]` | Image normalization mean |
+| preprocessing | std | `[0.229, 0.224, 0.225]` | Image normalization standard deviation |
 | training | epochs | 10 | Number of training epochs |
-| training | learning_rate | 5e-6 | AdamW learning rate |
-| training | accumulation_steps | 128 | Gradient accumulation |
+| training | batch_size | 1 | Batch size per worker |
+| training | accumulation_steps | 128 | Gradient accumulation steps |
+| training | learning_rate | 5.0e-6 | AdamW learning rate |
+| training | weight_decay | 1.0e-4 | AdamW weight decay |
 | training | triplet_margin | 0.2 | Triplet loss margin |
-| training | bf16 | true | BF16 mixed precision |
+| training | bf16 | true | BF16 Mixed Precision Learning |
+| training | checkpoint_dir | `"./checkpoints"` | Directory to save checkpoints |
+| training | num_workers | 4 | DataLoader workers |
+| inference | bf16 | true | BF16 Mixed Precision Inference |
 
 ## Project Structure
 
@@ -220,10 +231,10 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 ├── egaranet/                  # Python package
 │   ├── __init__.py            # Package exports
 │   ├── model.py               # EgaraNet model (backbone + StyleNet)
-│   ├── layers.py              # RMSNorm, SwiGLU, TAT, AttentionPooling
+│   ├── layers.py              # Custom layers (RMSNorm, SwiGLU, TAT, AttentionPooling)
 │   ├── losses.py              # Loss functions (TripletLoss)
 │   ├── preprocessing.py       # Image preprocessing (MaxResizeMod16)
-│   └── dataset.py             # StyleTripletDataset
+│   └── dataset.py             # Dataset loader (StyleTripletDataset)
 ├── configs/
 │   └── default.yaml           # Default training/inference configuration
 ├── train.py                   # Training CLI
@@ -231,7 +242,7 @@ The default configuration is in `configs/default.yaml`. All settings can be over
 ├── requirements.txt           # Python dependencies
 ├── LICENSE                    # Apache 2.0
 ├── README.md                  # English documentation
-└── README.ja.md               # 日本語ドキュメント
+└── README.ja.md               # Japanese documentation
 ```
 
 ## Input Requirements
