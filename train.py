@@ -317,6 +317,11 @@ def train(config: dict):
             etr = datetime.timedelta(seconds=int(remaining * avg_time))
             pbar.set_postfix(loss=f"{loss_val:.4f}", etr=str(etr))
 
+        # Flush remaining accumulated gradients at epoch end
+        if (i + 1) % accum_steps != 0:
+            optimizer.step()
+            optimizer.zero_grad()
+
         # Epoch summary
         avg_loss = epoch_loss / len(dataloader)
         print(f"Epoch {epoch + 1} — Average Loss: {avg_loss:.6f}")
